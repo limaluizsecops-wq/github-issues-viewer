@@ -7,7 +7,9 @@ export function activate(context: vscode.ExtensionContext) {
     const repo = await vscode.window.showInputBox({
       prompt: "Digite o repositório (ex: owner/repo)",
     });
-    if (!repo) return;
+    if (!repo) {
+      return;
+    }
 
     try {
       const response = await fetch(
