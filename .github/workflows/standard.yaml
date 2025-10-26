@@ -17,13 +17,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
       - name: Install Dependencies
-        run: npm ci
+        run: yarn install --frozen-lockfile
       - name: Lint
-        run: npm run lint
+        run: yarn lint
       - name: Test
-        run: npm run test
+        run: yarn test
       - name: Instalar VSCE (VS Code Extension Manager)
-        run: npm install -g @vscode/vsce
+        run: yarn global add @vscode/vsce
       - name: Gerar o arquivo .vsix
         run: vsce package --out extension.vsix
       - name: Armazenar o .vsix como artefato
