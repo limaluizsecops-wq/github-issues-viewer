@@ -1,0 +1,39 @@
+on:
+  push:
+    branches:
+      - main
+
+name: Standard
+
+jobs:
+  ci:
+    name: CI - Build and Test
+    runs-on: [self-hosted, vs-security-arm64]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          cache: npm
+          node-version-file: .nvmrc
+          registry-url: https://npm.pkg.github.com/
+      - name: Install Dependencies
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GHA_PACKAGES }}
+      - name: Lint
+        run: npm run lint
+      - name: Test
+        run: npm run test
+      - name: Instalar VSCE (VS Code Extension Manager)
+        run: npm install -g @vscode/vsce
+      - name: Gerar o arquivo .vsix
+        run: vsce package --out extension.vsix
+      - name: Armazenar o .vsix como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-vsix
+          path: extension.vsix
