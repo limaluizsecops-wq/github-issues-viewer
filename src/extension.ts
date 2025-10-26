@@ -1,26 +1,43 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  console.log('Extensão "github-issues-viewer" ativada.');
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "github-issues-viewer" is now active!');
+  const fetchIssues = async () => {
+    const repo = await vscode.window.showInputBox({
+      prompt: "Digite o repositório (ex: owner/repo)",
+    });
+    if (!repo) return;
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('github-issues-viewer.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from github-issues-viewer!');
-	});
+    try {
+      const response = await fetch(
+        `https://api.github.com/repos/${repo}/issues`
+      );
+      const issues = await response.json();
 
-	context.subscriptions.push(disposable);
+      if (!Array.isArray(issues)) {
+        vscode.window.showErrorMessage("Erro ao obter issues.");
+        return;
+      }
+
+      const issueList = issues
+        .map((i: any) => `#${i.number} - ${i.title}`)
+        .join("\n");
+
+      vscode.window.showInformationMessage(`Issues de ${repo}:\n${issueList}`);
+    } catch (err) {
+      vscode.window.showErrorMessage("Erro ao buscar issues: " + err);
+    }
+  };
+
+  // registra o comando normalmente
+  const disposable = vscode.commands.registerCommand(
+    "githubIssues.showIssues",
+    fetchIssues
+  );
+
+  context.subscriptions.push(disposable);
+
+  // chama automaticamente ao ativar a extensão
+  fetchIssues();
 }
-
-// This method is called when your extension is deactivated
-export function deactivate() {}
